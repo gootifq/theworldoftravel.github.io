@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение алгоритмической задачи</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .description {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .visualization {
+            margin-top: 30px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Решение алгоритмической задачи</h1>
+        
+        <div class="description">
+            <p><strong>Задача:</strong> Можно ли из бревна, имеющего диаметр поперечного сечения D, выпилить квадратный брус шириной A?</p>
+            <p><strong>Решение:</strong> Для решения задачи необходимо сравнить диагональ квадратного бруса с диаметром бревна. 
+            Если диагональ квадрата меньше или равна диаметру бревна, то брус можно выпилить.</p>
+            <p>Диагональ квадрата вычисляется по формуле: d = A × √2</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="diameter">Диаметр бревна (D):</label>
+            <input type="number" id="diameter" step="0.1" min="0" placeholder="Введите диаметр бревна">
+        </div>
+        
+        <div class="form-group">
+            <label for="width">Ширина бруса (A):</label>
+            <input type="number" id="width" step="0.1" min="0" placeholder="Введите ширину бруса">
+        </div>
+        
+        <button id="calculate">Проверить возможность</button>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="visualization">
+            <h3>Визуализация</h3>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('calculate').addEventListener('click', function() {
+            // Получаем значения из полей ввода
+            const diameter = parseFloat(document.getElementById('diameter').value);
+            const width = parseFloat(document.getElementById('width').value);
+            
+            // Проверяем корректность введенных данных
+            if (isNaN(diameter) || isNaN(width) || diameter <= 0 || width <= 0) {
+                alert('Пожалуйста, введите корректные положительные числа для диаметра и ширины.');
+                return;
+            }
+            
+            // Вычисляем диагональ квадратного бруса
+            const diagonal = width * Math.sqrt(2);
+            
+            // Получаем элемент для вывода результата
+            const resultElement = document.getElementById('result');
+            
+            // Проверяем условие и выводим результат
+            if (diagonal <= diameter) {
+                resultElement.textContent = `Да, можно выпилить брус шириной ${width} из бревна диаметром ${diameter}.`;
+                resultElement.className = 'result success';
+            } else {
+                resultElement.textContent = `Нет, нельзя выпилить брус шириной ${width} из бревна диаметром ${diameter}.`;
+                resultElement.className = 'result error';
+            }
+            
+            // Показываем результат
+            resultElement.style.display = 'block';
+            
+            // Обновляем визуализацию
+            updateVisualization(diameter, width, diagonal);
+        });
+        
+        function updateVisualization(diameter, width, diagonal) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Очищаем canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Центр canvas
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Масштабируем для визуализации (чтобы всё поместилось)
+            const scale = Math.min(canvas.width, canvas.height) / (diameter + 20);
+            
+            // Рисуем бревно (круг)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, diameter/2 * scale, 0, Math.PI * 2);
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Рисуем квадратный брус
+            const squareSize = width * scale;
+            ctx.beginPath();
+            ctx.rect(centerX - squareSize/2, centerY - squareSize/2, squareSize, squareSize);
+            
+            // Если брус помещается в бревно, закрашиваем его зеленым, иначе красным
+            if (diagonal <= diameter) {
+                ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+            } else {
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            }
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Рисуем диагональ квадрата
+            ctx.beginPath();
+            ctx.moveTo(centerX - squareSize/2, centerY - squareSize/2);
+            ctx.lineTo(centerX + squareSize/2, centerY + squareSize/2);
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 3]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Добавляем подписи
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Диаметр бревна: ${diameter}`, centerX, centerY - diameter/2 * scale - 10);
+            ctx.fillText(`Ширина бруса: ${width}`, centerX, centerY + squareSize/2 + 20);
+            ctx.fillText(`Диагональ бруса: ${diagonal.toFixed(2)}`, centerX, centerY + squareSize/2 + 40);
+        }
+    </script>
+</body>
+</html>
